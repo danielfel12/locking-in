@@ -1,0 +1,869 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="The 1% Protocol"/>
+<meta name="theme-color" content="#07111f"/>
+<link rel="manifest" href="manifest.json"/>
+<link rel="preconnect" href="https://api.open-meteo.com"/>
+<link rel="preconnect" href="https://nominatim.openstreetmap.org"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet"/>
+<title>The 1% Protocol</title>
+<style>
+:root{
+  --bg:#07111f; --bg2:#0b1730; --card:#0d1629; --card2:#101c34; --line:#1a2945;
+  --txt:#eef3ff; --muted:#9fb0d1; --muted2:#6d7da0; --green:#32e48b; --red:#ff6178;
+  --blue:#61a8ff; --yellow:#f9c74f; --orange:#ff9857; --purple:#ad8cff; --teal:#45d6d1;
+  --shadow:0 20px 60px rgba(0,0,0,.28);
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:Inter,system-ui,sans-serif;background:radial-gradient(circle at top,#0c2045 0%, var(--bg) 38%, #050b16 100%);color:var(--txt);min-height:100vh}
+button,input{font:inherit}
+button{cursor:pointer;border:0}
+a{color:inherit;text-decoration:none}
+#root{min-height:100vh}
+.app{max-width:1100px;margin:0 auto;padding:20px 14px 48px}
+.shell{background:linear-gradient(180deg,rgba(17,29,54,.96),rgba(10,18,34,.96));border:1px solid rgba(77,104,155,.28);box-shadow:var(--shadow);border-radius:28px;padding:18px}
+.header{display:grid;gap:14px;margin-bottom:16px}
+.headtop{display:flex;justify-content:space-between;gap:14px;align-items:flex-start;flex-wrap:wrap}
+.eyebrow{font-family:"JetBrains Mono", monospace;letter-spacing:.28em;font-size:11px;text-transform:uppercase;color:var(--green)}
+.title{font-size:44px;font-weight:900;line-height:.95;margin-top:6px}
+.subtle{color:var(--muted);font-size:14px}
+.pills{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.pill{padding:10px 14px;border-radius:999px;background:rgba(15,31,57,.8);border:1px solid rgba(72,101,151,.28);font-size:12px;font-weight:800;color:var(--green);letter-spacing:.08em;text-transform:uppercase}
+.grid4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.stat{background:linear-gradient(180deg,rgba(15,27,51,.95),rgba(12,22,42,.95));border:1px solid rgba(73,103,151,.2);border-radius:18px;padding:16px}
+.stat .label{font-size:13px;color:var(--muted)}
+.stat .value{font-size:40px;font-weight:900;line-height:1;margin-bottom:6px}
+.stat .value.small{font-size:28px}
+.tabs{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:4px}
+.tab{padding:14px 16px;border-radius:16px;background:#10182d;color:var(--muted);border:1px solid rgba(74,101,145,.22);font-weight:800}
+.tab.active{background:linear-gradient(180deg,rgba(38,82,74,.55),rgba(16,36,33,.92));border-color:rgba(73,205,145,.34);color:var(--green);box-shadow:inset 0 0 0 1px rgba(69,206,145,.14)}
+.connectRow{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.btn{padding:12px 16px;border-radius:14px;background:linear-gradient(180deg,#1b2846,#10192e);border:1px solid rgba(78,107,155,.25);color:var(--txt);font-weight:700}
+.btn.primary{background:linear-gradient(180deg,#1e6246,#15392d);border-color:rgba(88,223,162,.35);color:var(--green)}
+.btn.ghost{background:transparent}
+.content{display:grid;grid-template-columns:minmax(0,1fr);gap:14px}
+.weather{display:grid;grid-template-columns:1.5fr .7fr .7fr;gap:12px;background:linear-gradient(180deg,rgba(10,20,39,.92),rgba(6,14,30,.94));border:1px solid rgba(72,101,151,.2);border-radius:24px;padding:16px}
+.weatherMain{display:flex;gap:12px;align-items:center}
+.temp{font-size:64px;font-weight:900;line-height:1}
+.kicker{font-family:"JetBrains Mono", monospace;font-size:12px;color:var(--muted);letter-spacing:.15em;text-transform:uppercase}
+.miniCard{background:rgba(18,30,56,.85);border:1px solid rgba(73,102,151,.2);border-radius:18px;padding:14px}
+.trainingHint{grid-column:2/4;background:rgba(16,30,24,.9);border:1px solid rgba(69,206,145,.16);color:var(--green);padding:10px 12px;border-radius:14px;font-weight:700;font-size:14px;display:flex;align-items:center}
+.list{display:flex;flex-direction:column;gap:12px}
+.block{background:linear-gradient(180deg,rgba(16,27,49,.96),rgba(12,21,38,.96));border:1px solid rgba(74,104,151,.18);border-left:4px solid var(--accent,#61a8ff);border-radius:22px;overflow:hidden}
+.block.done{opacity:.76}
+.blockHead{display:flex;gap:12px;align-items:flex-start;padding:16px}
+.check{width:28px;height:28px;border-radius:10px;border:2px solid rgba(191,207,241,.7);background:transparent;display:flex;align-items:center;justify-content:center;flex:0 0 auto;color:#08111f;font-weight:900}
+.check.on{background:var(--green);border-color:var(--green)}
+.blockBody{flex:1;min-width:0}
+.topline{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:5px}
+.badge{font-family:"JetBrains Mono", monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;padding:4px 8px;border-radius:999px;background:rgba(255,255,255,.06);color:var(--accent,#61a8ff);font-weight:800}
+.blockTitle{font-size:29px;font-weight:800;line-height:1.12}
+.blockMeta{display:flex;gap:10px;flex-wrap:wrap;font-size:13px;color:var(--muted);margin-top:8px}
+.expand{width:40px;height:40px;border-radius:12px;background:rgba(255,255,255,.06);color:var(--txt);font-size:18px;display:flex;align-items:center;justify-content:center;flex:0 0 auto}
+.blockDetails{padding:0 16px 16px 56px;display:grid;gap:14px}
+.detailText{color:var(--muted);line-height:1.65;white-space:pre-line}
+.sectionTitle{font-family:"JetBrains Mono", monospace;font-size:12px;letter-spacing:.18em;color:var(--muted);text-transform:uppercase}
+.itemGrid{display:grid;gap:8px}
+.itemCard{background:rgba(255,255,255,.04);border:1px solid rgba(71,100,145,.18);border-radius:16px;padding:12px}
+.itemTop{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+.itemName{font-weight:700}
+.itemMeta{font-size:13px;color:var(--muted2);margin-top:4px;line-height:1.5}
+.inputRow{display:flex;gap:8px;align-items:center;margin-top:10px}
+.input{width:120px;border-radius:10px;border:1px solid rgba(76,104,152,.28);background:#091323;color:var(--txt);padding:8px 10px}
+.weekWrap{display:grid;grid-template-columns:280px minmax(0,1fr);gap:14px}
+.dayButton{width:100%;text-align:left;padding:14px;border-radius:18px;background:#0f1930;border:1px solid rgba(74,101,145,.18);color:var(--txt);margin-bottom:10px}
+.dayButton.active{border-color:rgba(73,205,145,.34);background:linear-gradient(180deg,rgba(25,62,53,.76),rgba(12,28,25,.92));box-shadow:inset 0 0 0 1px rgba(73,205,145,.16)}
+.dayDate{color:var(--muted);font-size:13px;margin-top:5px}
+.summaryBox{background:linear-gradient(180deg,rgba(13,24,45,.96),rgba(8,16,32,.96));border:1px solid rgba(72,101,151,.18);border-radius:22px;padding:16px}
+.summaryGrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:14px}
+.summaryStat{background:rgba(255,255,255,.04);border-radius:16px;padding:12px}
+.srOnly{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+footer.note{margin-top:14px;color:var(--muted2);font-size:13px}
+@media (max-width:900px){
+  .grid4,.summaryGrid,.weather{grid-template-columns:1fr 1fr}
+  .trainingHint{grid-column:1/-1}
+  .weekWrap{grid-template-columns:1fr}
+  .title{font-size:34px}
+}
+@media (max-width:640px){
+  .app{padding:10px 10px 30px}
+  .shell{padding:14px;border-radius:22px}
+  .grid4,.weather{grid-template-columns:1fr}
+  .weatherMain{align-items:flex-start}
+  .temp{font-size:48px}
+  .blockTitle{font-size:22px}
+  .blockDetails{padding:0 14px 14px 14px}
+  .headtop{flex-direction:column;align-items:flex-start}
+  .pills{justify-content:flex-start}
+}
+</style>
+</head>
+<body>
+<div id="root"><div style="padding:28px;color:#eef3ff;font-family:Inter,system-ui,sans-serif">Cargando protocolo…</div></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+
+<script type="text/babel">
+const { useEffect, useMemo, useState } = React;
+
+const C = {
+  bg:"#07111f", card:"#0d1629", border:"#1a2945", green:"#32e48b", red:"#ff6178", blue:"#61a8ff",
+  orange:"#ff9857", purple:"#ad8cff", teal:"#45d6d1", yellow:"#f9c74f", gray:"#8290ae", pink:"#ff7ca7",
+  p:"#eef3ff", ps:"#9fb0d1", pm:"#6d7da0"
+};
+
+const WMO = {
+  0:{label:"Despejado",icon:"☀️"},1:{label:"Mayormente despejado",icon:"🌤️"},2:{label:"Parcialmente nublado",icon:"⛅"},
+  3:{label:"Nublado",icon:"☁️"},45:{label:"Niebla",icon:"🌫️"},48:{label:"Niebla",icon:"🌫️"},
+  51:{label:"Llovizna leve",icon:"🌦️"},53:{label:"Llovizna",icon:"🌦️"},55:{label:"Llovizna intensa",icon:"🌧️"},
+  61:{label:"Lluvia leve",icon:"🌧️"},63:{label:"Lluvia moderada",icon:"🌧️"},65:{label:"Lluvia intensa",icon:"🌧️"},
+  71:{label:"Nieve leve",icon:"🌨️"},73:{label:"Nieve",icon:"❄️"},75:{label:"Nieve intensa",icon:"❄️"},
+  80:{label:"Chaparrones",icon:"🌦️"},81:{label:"Chaparrones moderados",icon:"🌧️"},82:{label:"Chaparrones fuertes",icon:"⛈️"},
+  95:{label:"Tormenta",icon:"⛈️"},96:{label:"Tormenta con granizo",icon:"⛈️"},99:{label:"Tormenta con granizo",icon:"⛈️"}
+};
+
+const PROTOCOL = {
+  // 0=Sun, 1=Mon, 2=Tue, 3=Wed, 4=Thu, 5=Fri, 6=Sat
+  1: { // LUNES
+    tag:"GYM PIERNAS + Cali A", color:C.blue,
+    blocks:[
+      {id:"l-mat", time:"5:45", name:"Protocolo Matutino", icon:"☀️", type:"habit", dur:"30min", checkable:true,
+       desc:"Luz solar 10min afuera sin lentes · Grounding descalzo en hierba · Coherencia cardíaca 5min (5.5 resp/min) · Agua 500ml",
+       supplements:[
+         {name:"NaturoBest Multi",dose:"1 cápsula",note:"Con desayuno con grasa"},
+         {name:"D3 + K2 MK-7",dose:"4,000 IU + 200mcg",note:"Con la grasa del desayuno"},
+         {name:"Omega-3 EPA+DHA",dose:"2g (mitad dosis)",note:"Con comida"},
+         {name:"Probiótico",dose:"Según producto",note:"Con desayuno"},
+         {name:"1 Nuez de Brasil",dose:"1 unidad SOLO",note:"~80mcg Selenium adicional"},
+         {name:"Mason's Mushrooms",dose:"1 cucharadita (2.6g)",note:"En café de mañana"},
+         {name:"Creatina monohidrato",dose:"5g (1ª de 2)",note:"Con desayuno"},
+       ]},
+      {id:"l-work", time:"8:00", name:"Trabajo", icon:"💼", type:"work", dur:"8h", checkable:false,
+       desc:"Almuerzo: proteína 50g + carbos + verduras · Multi cap 2 con almuerzo · Omega-3 1-2g · Caminar 15min post-almuerzo",
+       supplements:[
+         {name:"NaturoBest Multi",dose:"1 cápsula (2ª)",note:"Con almuerzo"},
+         {name:"Omega-3 EPA+DHA",dose:"1-2g (resto)",note:"Con almuerzo"},
+         {name:"Hierro bisglicinato",dose:"18-25mg",note:"SOLO Mar/Mié/Jue · Con VitC · No con café"},
+       ]},
+      {id:"l-gym", time:"16:20", name:"GYM PIERNAS + Cali A", icon:"🦵", type:"gym", dur:"90min", checkable:true,
+       desc:"PRE: Colágeno 15g + VitC 300mg · Creatina 5g · Carbos 50g · Cafeína 200mg (30-45min antes)",
+       exercises:[
+         {name:"Squat barra",sets:"4",reps:"8",rest:"3min",weight:"",note:"Tempo 3-0-1. Movilidad tobillo crítica. Profundidad paralelo."},
+         {name:"Romanian Deadlift",sets:"3",reps:"10",rest:"2min",weight:"",note:"Isquios y glúteos = motor del running. Busca stretch completo abajo."},
+         {name:"Bulgarian Split Squat",sets:"3",reps:"8/lado",rest:"90s",weight:"",note:"⚠️ Corrector desequilibrio segmental Evolt. Pierna trasera en banco."},
+         {name:"Hip Thrust barra",sets:"3",reps:"12",rest:"90s",weight:"",note:"Mayor activación glútea. Mejora velocidad de sprint."},
+         {name:"Leg Press",sets:"3",reps:"12",rest:"90s",weight:"",note:"Pie alto = más glúteo. Complemento seguro del squat."},
+         {name:"Calf Raises unilateral",sets:"4",reps:"15-20",rest:"60s",weight:"",note:"Unilateral desde el inicio. Corredores necesitan pantorrillas fuertes."},
+         {name:"Dead Bug",sets:"3",reps:"10/lado",rest:"45s",weight:"Corporal",note:"Core anti-rotación = economía de carrera."},
+         {name:"Plank",sets:"3",reps:"60s",rest:"45s",weight:"Corporal",note:"Progresión: plank → tap de hombros → en anillas."},
+         {name:"Pull-ups (Cali A)",sets:"3",reps:"max",rest:"2min",weight:"Corporal",note:"Negativas 5seg si menos de 3 libres. PRIORIDAD del protocolo."},
+         {name:"Chin-ups (Cali A)",sets:"3",reps:"max",rest:"90s",weight:"Corporal",note:"Agarre supino. Bíceps activo."},
+         {name:"Hollow Body Hold",sets:"3",reps:"30s",rest:"45s",weight:"Corporal",note:"Core activado. Base para calistenia avanzada."},
+       ]},
+      {id:"l-sauna", time:"17:55", name:"Sauna + Ducha fría", icon:"🔥", type:"sauna", dur:"25min", checkable:true,
+       desc:"15-20min a 85-100°C · Ducha fría 2-3min INMEDIATA post-sauna · NO baño de hielo prolongado post-gym (inhibe mTOR) · Hidratación 500ml + electrolitos"},
+      {id:"l-martina", time:"18:30", name:"Martina — Caminata", icon:"🐕", type:"martina", dur:"45min", checkable:true,
+       desc:"Parque o montaña · Zone 1 (FC menor a 120 BPM) · Grounding descalzo si hay tierra o hierba · Meta pasos del día: 10,000 totales"},
+      {id:"l-cena", time:"19:30", name:"Cena + Suplementos noche", icon:"🌙", type:"habit", dur:"—", checkable:true,
+       desc:"Proteína 45-50g + carbos + verduras + grasas",
+       supplements:[
+         {name:"Ashwagandha KSM-66",dose:"600mg",note:"Con cena. Reduce cortisol. Mejora sueño."},
+         {name:"CoQ10 Ubiquinol",dose:"100-200mg",note:"Con comida con grasa. No ubiquinona."},
+       ]},
+      {id:"l-sueno", time:"21:00", name:"Protocolo Sueño — Cama 21:45", icon:"😴", type:"sleep", dur:"—", checkable:true,
+       desc:"Gafas amber si hay pantallas desde las 8pm · Sin pantallas 30min antes · Box breathing 4-4-4-4 × 5min · 18°C en el cuarto · Oscuridad total",
+       supplements:[
+         {name:"Magnesio Glicinato",dose:"340-400mg elemental",note:"1h antes de dormir. SOLO glicinato o bisglicinato. No óxido."},
+       ]},
+    ]
+  },
+  2: { // MARTES
+    tag:"Zone 2 + Fútbol", color:C.green,
+    blocks:[
+      {id:"ma-pre", time:"5:45", name:"Pre-run matutino", icon:"🏃", type:"run", dur:"5min", checkable:true,
+       desc:"Agua 500ml · Colágeno 15g + VitC 300mg (30min antes del run) · Sin desayuno — ayunas maximiza biogénesis mitocondrial",
+       supplements:[
+         {name:"Colágeno péptidos + VitC",dose:"15g + 300mg",note:"30min antes de correr. SOLO funciona pre-ejercicio."},
+       ]},
+      {id:"ma-z2", time:"6:00", name:"Zone 2 Run — AYUNAS", icon:"🏃", type:"run", dur:"35min", checkable:true,
+       desc:"35min CONVERSACIONAL · Pace 6:30-7:00/km · FC 130-145 BPM\n\nSi no puedes hablar en frases completas → más lento. El ayuno potencia la adaptación metabólica y la biogénesis mitocondrial.\n\nPost-run inmediato: proteína 40-50g dentro de 30min + carbos (día doble, necesitas glucógeno para el fútbol)."},
+      {id:"ma-mat", time:"6:45", name:"Protocolo Matutino + Desayuno", icon:"☀️", type:"habit", dur:"20min", checkable:true,
+       desc:"Luz solar · Suplementos con desayuno grande: carbos altos (día doble)",
+       supplements:[
+         {name:"NaturoBest Multi",dose:"1 cápsula",note:"Con desayuno"},
+         {name:"D3 + K2",dose:"4,000 IU + 200mcg",note:"Con grasa"},
+         {name:"Omega-3",dose:"2g",note:"Con comida"},
+         {name:"Probiótico",dose:"Dosis producto",note:""},
+         {name:"1 Nuez de Brasil",dose:"1 unidad",note:""},
+         {name:"Mason's Mushrooms",dose:"1tsp en café",note:""},
+         {name:"Creatina",dose:"5g",note:""},
+       ]},
+      {id:"ma-work", time:"8:00", name:"Trabajo", icon:"💼", type:"work", dur:"8h", checkable:false,
+       desc:"Sin cafeína después de las 12pm (fútbol 8pm → quieres dormir bien). Almuerzo con carbos. Hierro bisglicinato HOY con almuerzo.",
+       supplements:[
+         {name:"NaturoBest Multi",dose:"1 cápsula (2ª)",note:"Con almuerzo"},
+         {name:"Hierro bisglicinato",dose:"18-25mg",note:"MARTES es día de hierro. Con VitC. Sin café."},
+       ]},
+      {id:"ma-martina", time:"16:30", name:"Martina — Montaña", icon:"🐕", type:"martina", dur:"45min", checkable:true,
+       desc:"Recovery activo ENTRE el run AM y el fútbol PM · Zone 1 pura · Limpia lactato residual del run · Prepara el cuerpo para el partido"},
+      {id:"ma-prefutbol", time:"19:15", name:"Pre-Fútbol Stack", icon:"⚡", type:"habit", dur:"15min", checkable:true,
+       desc:"Cena liviana 2h antes: carbos 60g + proteína 30g. Nada pesado.",
+       supplements:[
+         {name:"Beta-alanina",dose:"3.2g",note:"45min antes. Hormigueo = normal."},
+         {name:"Total Beets (nitratos)",dose:"Dosis producto",note:"Idealmente 2-3h antes. Pre-partido."},
+         {name:"Electrolitos",dose:"1 serving",note:"Pre y durante el partido."},
+         {name:"Cafeína 200mg",dose:"200mg",note:"Opcional. Considerar hora de sueño."},
+       ]},
+      {id:"ma-futbol", time:"20:00", name:"Fútbol", icon:"⚽", type:"sport", dur:"90min", checkable:true,
+       desc:"Hidratación cada 20min · Post-partido (30min): Proteína 40g + Carbos 60g · Tart Cherry 480mg · Ducha contraste: 3min caliente / 1min frío × 3 rondas"},
+      {id:"ma-post", time:"21:45", name:"Post-fútbol + Sueño", icon:"😴", type:"sleep", dur:"—", checkable:true,
+       desc:"Ducha contraste post-fútbol SÍ aplica (cardio, no gym)",
+       supplements:[
+         {name:"Tart Cherry Extract",dose:"480mg antocianinas",note:"Post-fútbol y post-long run únicamente."},
+         {name:"Magnesio Glicinato",dose:"340mg",note:"Antes de dormir."},
+       ]},
+    ]
+  },
+  3: { // MIÉRCOLES
+    tag:"Tempo AM + Pull PM", color:C.purple,
+    blocks:[
+      {id:"mi-pre", time:"5:45", name:"Pre-Tempo", icon:"⚡", type:"run", dur:"5min", checkable:true,
+       desc:"Colágeno 15g + VitC · Cafeína 200mg · Electrolitos · Ayunas o plátano si poca energía",
+       supplements:[
+         {name:"Colágeno + VitC",dose:"15g + 300mg",note:"30min antes. Obligatorio pre-run."},
+         {name:"Cafeína",dose:"200mg",note:"30-45min antes del tempo."},
+         {name:"Electrolitos",dose:"1 serving",note:"Pre-run."},
+       ]},
+      {id:"mi-tempo", time:"6:05", name:"Tempo Run", icon:"⚡", type:"run", dur:"45min", checkable:true,
+       desc:"Warm-up 5min fácil\n\nMes 1-2: 2×10min a 5:20-5:35/km con 2min recovery\nMes 3-4: 20-25min continuo a 5:20-5:35/km\nMes 5-6: 25-30min continuo\n\nCool-down 5min · FC objetivo: 155-165 BPM · Incómodo pero sostenible. El más específico para Sub 1:42."},
+      {id:"mi-mat", time:"6:55", name:"Post-Tempo + Desayuno + Matutino", icon:"☀️", type:"habit", dur:"20min", checkable:true,
+       desc:"Proteína 40g + carbos dentro de 30min · Luz solar · Suplementos",
+       supplements:[
+         {name:"NaturoBest Multi",dose:"1 cápsula",note:"Con desayuno"},
+         {name:"D3 + K2",dose:"4,000 IU + 200mcg",note:"Con grasa"},
+         {name:"Omega-3",dose:"2g",note:""},
+         {name:"Probiótico + 1 Nuez Brasil",dose:"Dosis + 1 unidad",note:""},
+         {name:"Mason's Mushrooms + Creatina",dose:"1tsp + 5g",note:"En café"},
+       ]},
+      {id:"mi-work", time:"8:00", name:"Trabajo", icon:"💼", type:"work", dur:"8h", checkable:false,
+       desc:"Almuerzo completo con carbos + proteína. HIERRO BISGLICINATO hoy. Día más duro de la semana — come bien.",
+       supplements:[
+         {name:"NaturoBest Multi",dose:"1 cápsula (2ª)",note:"Con almuerzo"},
+         {name:"Hierro bisglicinato",dose:"18-25mg",note:"MIÉRCOLES es día de hierro. Con VitC. Sin café."},
+       ]},
+      {id:"mi-gym", time:"16:20", name:"PULL-UPS FRESCOS + GYM PULL + Cali B", icon:"🔄", type:"gym", dur:"80min", checkable:true,
+       desc:"PRE: Colágeno 15g + VitC · Creatina 5g\n\n⭐ PULL-UPS PRIMERO — frescos = mayor progresión",
+       exercises:[
+         {name:"⭐ Pull-ups FRESCOS",sets:"3",reps:"max",rest:"2-3min",weight:"Corporal",note:"PRIMERO. Negativas 5seg si menos de 3 libres. Progresión más importante."},
+         {name:"Chin-ups frescos",sets:"2",reps:"max",rest:"2min",weight:"Corporal",note:"Inmediatamente después. Agarre supino."},
+         {name:"Barbell Row",sets:"4",reps:"8",rest:"2-3min",weight:"",note:"Espalda plana, codos 45°. Base de la espalda."},
+         {name:"Lat Pulldown",sets:"3",reps:"10",rest:"90s",weight:"",note:"Agarre ancho. Barra al mentón. Squeeze latísimos."},
+         {name:"DB Single-Arm Row",sets:"3",reps:"10/lado",rest:"90s",weight:"",note:"Rango completo. Siente el stretch del latísimo arriba."},
+         {name:"Face Pulls",sets:"3",reps:"15-20",rest:"60s",weight:"",note:"NUNCA saltear. Rotación externa al final. Salud del hombro."},
+         {name:"Bicep Curl",sets:"3",reps:"12",rest:"60s",weight:"",note:"Supina la muñeca arriba. No balancear torso."},
+         {name:"Rear Delt Fly",sets:"3",reps:"15",rest:"60s",weight:"",note:"Postura + rendimiento en todos los deportes."},
+         {name:"Single-leg RDL",sets:"3",reps:"8/lado",rest:"90s",weight:"",note:"⚠️ Corrector desequilibrio segmental Evolt."},
+         {name:"Dips (Cali B)",sets:"3",reps:"max",rest:"2min",weight:"Corporal",note:"Paralelas. Codos 45°. Progresión según fase calistenia."},
+         {name:"Archer Push-ups (Cali B)",sets:"2",reps:"6-8/lado",rest:"90s",weight:"Corporal",note:"Transición al unilateral."},
+         {name:"Decline Push-ups (Cali B)",sets:"3",reps:"12",rest:"60s",weight:"Corporal",note:"Pies en banco. Activa fibras claviculares."},
+       ]},
+      {id:"mi-sauna", time:"17:45", name:"Sauna + Ducha fría", icon:"🔥", type:"sauna", dur:"25min", checkable:true,
+       desc:"15-20min · Ducha fría · Miércoles es el día más duro — sauna especialmente importante hoy para recuperación."},
+      {id:"mi-martina", time:"18:30", name:"Martina — Caminata", icon:"🐕", type:"martina", dur:"45min", checkable:true,
+       desc:"Zone 1 de recuperación post-día más duro. Activa sistema parasimpático y acelera la recuperación."},
+      {id:"mi-cena", time:"19:30", name:"Cena + Suplementos noche", icon:"🌙", type:"habit", dur:"—", checkable:true,
+       desc:"Carbos + proteína 50g. Miércoles el cuerpo lo necesita.",
+       supplements:[
+         {name:"Ashwagandha KSM-66",dose:"600mg",note:"Con cena."},
+         {name:"CoQ10 Ubiquinol",dose:"100-200mg",note:"Con grasa."},
+         {name:"Magnesio Glicinato",dose:"340mg",note:"1h antes de dormir."},
+       ]},
+    ]
+  },
+  4: { // JUEVES
+    tag:"Montaña con Martina — Recovery Élite", color:C.gray,
+    blocks:[
+      {id:"ju-mat", time:"5:45", name:"Protocolo Matutino Extendido", icon:"☀️", type:"habit", dur:"45min", checkable:true,
+       desc:"Luz solar 15min · Grounding 15min descalzo · Meditación 10min · Coherencia cardíaca 5min · Sin cafeína hasta las 9am",
+       supplements:[
+         {name:"NaturoBest Multi",dose:"1 cápsula",note:"Con desayuno"},
+         {name:"D3 + K2",dose:"4,000 IU + 200mcg",note:"Con grasa"},
+         {name:"Omega-3",dose:"2g",note:""},
+         {name:"Probiótico + 1 Nuez Brasil",dose:"Dosis + 1 unidad",note:""},
+         {name:"Mason's Mushrooms + Creatina",dose:"1tsp + 5g",note:"En café (después de las 9am)"},
+       ]},
+      {id:"ju-work", time:"8:00", name:"Trabajo", icon:"💼", type:"work", dur:"8h", checkable:false,
+       desc:"Día de menor carga física. Reuniones caminando si es posible. HIERRO BISGLICINATO hoy con almuerzo.",
+       supplements:[
+         {name:"NaturoBest Multi",dose:"1 cápsula (2ª)",note:"Con almuerzo"},
+         {name:"Hierro bisglicinato",dose:"18-25mg",note:"JUEVES es día de hierro. Con VitC. Sin café por 1h."},
+       ]},
+      {id:"ju-montana", time:"16:30", name:"Martina — MONTAÑA LARGA (sesión oficial)", icon:"🏔️", type:"martina", dur:"60min", checkable:true,
+       desc:"60min · MONTAÑA siempre los jueves · Descalzo donde sea posible · FC menor a 120 BPM — Zone 1\n\nESTA ES LA SESIÓN DE ENTRENAMIENTO DEL JUEVES:\n• Zone 1 = recovery activo óptimo\n• Grounding = reduce inflamación, mejora ritmo circadiano\n• Naturaleza = reduce cortisol más que caminar en ciudad (20+ estudios)\n• BDNF = plasticidad neuronal, aprendizaje motor para fútbol y tenis"},
+      {id:"ju-mov", time:"17:30", name:"Movilidad", icon:"🧘", type:"recovery", dur:"20min", checkable:true,
+       exercises:[
+         {name:"Dorsiflexión tobillo",sets:"3",reps:"60s/lado",rest:"15s",weight:"Corporal",note:"Knee-to-wall. Crítico para squat y running."},
+         {name:"Hip flexor stretch",sets:"3",reps:"60s/lado",rest:"15s",weight:"Corporal",note:"Rodilla en suelo. Caderear hacia adelante."},
+         {name:"90/90 Stretch",sets:"3",reps:"60s/lado",rest:"15s",weight:"Corporal",note:"Cadera externa e interna simultáneas."},
+         {name:"Torácica foam roller",sets:"2",reps:"10 rolls",rest:"30s",weight:"Corporal",note:"Extensión sobre foam roller. Rotaciones sentado."},
+         {name:"Band dislocations",sets:"2",reps:"10",rest:"30s",weight:"Banda",note:"Hombros. Banda larga. Brazos rectos."},
+         {name:"PNF isquios",sets:"3",reps:"contrae 6s, estira 30s",rest:"15s",weight:"Corporal",note:"Contrae, relaja, estira más profundo × 3."},
+       ],
+       desc:"Sauna opcional después si HRV verde en Oura."},
+      {id:"ju-cena", time:"19:30", name:"Cena + Suplementos noche", icon:"🌙", type:"habit", dur:"—", checkable:true,
+       desc:"Proteína 50g + verduras + grasas. Carbos reducidos (día de descanso).",
+       supplements:[
+         {name:"Ashwagandha KSM-66",dose:"600mg",note:"Con cena."},
+         {name:"CoQ10 Ubiquinol",dose:"100-200mg",note:"Con grasa."},
+         {name:"Magnesio Glicinato",dose:"340mg",note:"1h antes de dormir."},
+       ]},
+    ]
+  },
+  5: { // VIERNES
+    tag:"Push + Grip work — Longevidad", color:C.orange,
+    blocks:[
+      {id:"vi-mat", time:"5:45", name:"Protocolo Matutino", icon:"☀️", type:"habit", dur:"30min", checkable:true,
+       desc:"Luz solar · Luz roja en tren superior 10min (pre-activación) · Coherencia cardíaca · Suplementos",
+       supplements:[
+         {name:"NaturoBest Multi",dose:"1 cápsula",note:"Con desayuno"},
+         {name:"D3 + K2",dose:"4,000 IU + 200mcg",note:"Con grasa"},
+         {name:"Omega-3",dose:"2g",note:""},
+         {name:"Probiótico + 1 Nuez Brasil",dose:"Dosis + 1 unidad",note:""},
+         {name:"Mason's Mushrooms + Creatina",dose:"1tsp + 5g",note:"En café"},
+       ]},
+      {id:"vi-work", time:"8:00", name:"Trabajo", icon:"💼", type:"work", dur:"8h", checkable:false,
+       desc:"CENA DE HOY con carbos ALTOS = pre-carga para long run del domingo. Caminar post-almuerzo.",
+       supplements:[
+         {name:"NaturoBest Multi",dose:"1 cápsula (2ª)",note:"Con almuerzo"},
+         {name:"Omega-3",dose:"1-2g (resto)",note:"Con almuerzo"},
+       ]},
+      {id:"vi-gym", time:"16:20", name:"GYM PUSH + Cali C + Grip Work", icon:"🏋️", type:"gym", dur:"90min", checkable:true,
+       desc:"PRE: Colágeno 15g + VitC · Creatina 5g · Cafeína 200mg",
+       exercises:[
+         {name:"Bench Press",sets:"4",reps:"8",rest:"2-3min",weight:"",note:"Progresión lineal semanal. RIR 0 en el último set."},
+         {name:"Overhead Press barra",sets:"3",reps:"10",rest:"2min",weight:"",note:"Fuerza funcional fútbol y tenis. Codos frontales."},
+         {name:"Incline DB Press",sets:"3",reps:"10-12",rest:"90s",weight:"",note:"Stretch completo en la bajada. Mayor rango que barra."},
+         {name:"Cable Flies",sets:"3",reps:"12-15",rest:"60s",weight:"",note:"Pausa 1s al cerrar. Aislamiento total pectoral."},
+         {name:"Tricep Pushdown",sets:"3",reps:"12",rest:"60s",weight:"",note:"Codos fijos. Triceps = 2/3 del volumen del brazo."},
+         {name:"Lateral Raises",sets:"3",reps:"15",rest:"60s",weight:"",note:"Peso ligero. Forma mayor que peso. Pausa en top."},
+         {name:"Pull-ups (Cali C)",sets:"3",reps:"max",rest:"2min",weight:"Corporal",note:"Full circuit. Descanso mínimo entre ejercicios."},
+         {name:"Dips (Cali C)",sets:"3",reps:"max",rest:"90s",weight:"Corporal",note:"Full circuit."},
+         {name:"Push-ups (Cali C)",sets:"3",reps:"max",rest:"60s",weight:"Corporal",note:"Full circuit."},
+         {name:"Chin-ups (Cali C)",sets:"2",reps:"max",rest:"90s",weight:"Corporal",note:"Full circuit."},
+         {name:"🤜 Farmer's Carries",sets:"4",reps:"30m",rest:"60s",weight:"Max posible",note:"GRIP LONGEVIDAD. Lancet 2015: cada 5kg menos agarre = +17% mortalidad CV."},
+         {name:"🤜 Dead Hang",sets:"3",reps:"max tiempo",rest:"90s",weight:"Corporal",note:"Objetivo: 60 segundos. Agarre + escápulas activas."},
+         {name:"🤜 Plate Pinch",sets:"3",reps:"30s",rest:"60s",weight:"2 discos",note:"Pellizca 2 discos juntos. Fuerza de pinza."},
+       ]},
+      {id:"vi-sauna", time:"17:55", name:"Sauna — Pre-carga Long Run", icon:"🔥", type:"sauna", dur:"25min", checkable:true,
+       desc:"15-20min · Ducha fría · Esta sesión prepara el cuerpo para el long run del domingo: aumenta volumen plasmático, activa proteínas de choque térmico."},
+      {id:"vi-martina", time:"18:30", name:"Martina — Caminata", icon:"🐕", type:"martina", dur:"45min", checkable:true,
+       desc:"Zone 1 post-push. Cena con carbos altos esta noche: arroz o pasta 100-120g + proteína 45g."},
+      {id:"vi-cena", time:"19:30", name:"Cena PRE-CARGA + Suplementos", icon:"🌙", type:"habit", dur:"—", checkable:true,
+       desc:"CARBOS ALTOS: pasta integral o arroz 100-120g + proteína 50g. Crítico para el long run del domingo.",
+       supplements:[
+         {name:"Ashwagandha KSM-66",dose:"600mg",note:"Con cena."},
+         {name:"CoQ10 Ubiquinol",dose:"100-200mg",note:"Con grasa."},
+         {name:"Magnesio Glicinato",dose:"340mg",note:"1h antes de dormir. Sin excepción viernes."},
+       ]},
+    ]
+  },
+  6: { // SÁBADO
+    tag:"Norwegian 4×4 + Cali + Tenis", color:C.pink,
+    blocks:[
+      {id:"sa-pre", time:"6:30", name:"Desayuno + Pre-Norwegian Stack", icon:"⚡", type:"habit", dur:"30min", checkable:true,
+       desc:"Desayuno GRANDE antes del Norwegian. Siempre alimentado para VO2max.",
+       supplements:[
+         {name:"Total Beets (nitratos)",dose:"Dosis producto",note:"Ahora — para tenerlo 2h antes del esfuerzo."},
+         {name:"Multi cap 1 + D3 + K2",dose:"1 cap + 4,000 IU + 200mcg",note:"Con el desayuno."},
+         {name:"Omega-3",dose:"2g",note:""},
+         {name:"Probiótico + 1 Nuez Brasil",dose:"",note:""},
+         {name:"Mason's Mushrooms + Creatina",dose:"1tsp + 5g",note:"En café."},
+         {name:"Beta-alanina",dose:"3.2g",note:"45min antes del Norwegian."},
+         {name:"Cafeína",dose:"200mg",note:"30min antes del Norwegian."},
+         {name:"Electrolitos",dose:"1 serving",note:"Pre-Norwegian."},
+       ]},
+      {id:"sa-no4", time:"8:00", name:"NORWEGIAN 4×4 — VO2max Gold Standard", icon:"📈", type:"run", dur:"40min", checkable:true,
+       desc:"🏆 PROTOCOLO EXACTO — Helgerud 2007: +13% VO2max en 8 semanas\n\n• 10min calentamiento (60-70% HRmax, 130-140 BPM)\n• 4min MUY DURO al 90-95% HRmax (175-186 BPM) ← trabaja duro\n• 3min recovery activo trote suave (no pares)\n• Repetir × 4 intervalos\n• 5min cool-down\n\nMandsager 2018 (122,000 pacientes): cada 1-MET más = -15% mortalidad.\n\nTIEMPO TOTAL: ~40min · 16min de trabajo real"},
+      {id:"sa-cali", time:"8:45", name:"Calistenia Full Circuit", icon:"💪", type:"gym", dur:"25min", checkable:true,
+       desc:"Cuerpo activado y caliente del 4×4 — activación neurológica máxima. Descanso mínimo entre ejercicios.",
+       exercises:[
+         {name:"Pull-ups",sets:"3",reps:"max",rest:"90s",weight:"Corporal",note:""},
+         {name:"Dips",sets:"3",reps:"max",rest:"90s",weight:"Corporal",note:""},
+         {name:"Push-ups",sets:"3",reps:"max",rest:"60s",weight:"Corporal",note:""},
+         {name:"Chin-ups",sets:"2",reps:"max",rest:"90s",weight:"Corporal",note:""},
+         {name:"Hollow Body Hold",sets:"2",reps:"30s",rest:"45s",weight:"Corporal",note:""},
+       ]},
+      {id:"sa-tenis", time:"10:00", name:"Tenis", icon:"🎾", type:"sport", dur:"90min", checkable:true,
+       desc:"Post: Proteína 40g · Estiramientos 20min · Foam rolling · Tart Cherry 480mg si hubo intensidad alta"},
+      {id:"sa-martina", time:"14:00", name:"Martina — Montaña post-tenis", icon:"🐕", type:"martina", dur:"60min", checkable:true,
+       desc:"Recovery activo post-Norwegian y tenis. Montaña lenta descalza = grounding + Zone 1."},
+      {id:"sa-cena", time:"19:00", name:"Cena CARGA DE CARBOS + Suplementos", icon:"🌙", type:"habit", dur:"—", checkable:true,
+       desc:"Cena más importante del fin de semana: carbos ALTOS para el long run del domingo. Arroz + proteína + verduras.",
+       supplements:[
+         {name:"NaturoBest Multi",dose:"1 cápsula (2ª)",note:"Con cena"},
+         {name:"Omega-3",dose:"1-2g (resto)",note:""},
+         {name:"Tart Cherry Extract",dose:"480mg",note:"Post-tenis o post-Norwegian."},
+         {name:"Ashwagandha + CoQ10",dose:"600mg + 100-200mg",note:"Con cena."},
+         {name:"Magnesio Glicinato",dose:"340mg",note:"1h antes de dormir. Long run mañana depende de este sueño."},
+       ]},
+    ]
+  },
+  0: { // DOMINGO
+    tag:"LONG RUN — La sesión más importante", color:C.red,
+    blocks:[
+      {id:"do-pre", time:"6:30", name:"Pre-Long Run Ritual", icon:"🏃", type:"habit", dur:"30min", checkable:true,
+       desc:"",
+       supplements:[
+         {name:"Colágeno 15g + VitC",dose:"15g + 300mg",note:"60min antes del run."},
+         {name:"Electrolitos",dose:"1 serving",note:"Pre-run largo."},
+       ]},
+      {id:"do-lr", time:"7:00", name:"LONG RUN — Solo esto hoy", icon:"🏃", type:"run", dur:"60-130min", checkable:true,
+       desc:"DOMINGO = SOLO LONG RUN. Sin tenis, sin extras.\n\nMes 1-2: 10-12km Zone 2 puro (6:30-7:00/km)\nMes 3-4: 13-18km + últimos 3-5km Race Pace 4:58/km\nMes 5: 18-21km simulacro completo Sub 1:42\nMes 6: tapering 10-12km\n\nHidratación + electrolitos cada 20-25min si run mayor de 60min"},
+      {id:"do-post", time:"Post-run", name:"Recovery Post-Long Run", icon:"🔄", type:"recovery", dur:"40min", checkable:true,
+       desc:"",
+       supplements:[
+         {name:"Proteína whey",dose:"40g",note:"Dentro de 30min post-run."},
+         {name:"Carbos rápidos",dose:"80g",note:"Plátano + dátiles + arroz."},
+         {name:"Tart Cherry Extract",dose:"480mg",note:"Post long run siempre."},
+       ]},
+      {id:"do-mat", time:"9:30", name:"Protocolo Matutino + Brunch", icon:"☀️", type:"habit", dur:"20min", checkable:true,
+       desc:"Luz solar · Suplementos · Comida grande de recuperación",
+       supplements:[
+         {name:"NaturoBest Multi",dose:"1 cápsula",note:"Con desayuno/brunch"},
+         {name:"D3 + K2",dose:"4,000 IU + 200mcg",note:""},
+         {name:"Omega-3",dose:"2g",note:""},
+         {name:"Probiótico + 1 Nuez Brasil",dose:"",note:""},
+         {name:"Mason's Mushrooms + Creatina",dose:"1tsp + 5g",note:""},
+       ]},
+      {id:"do-martina", time:"15:00", name:"Martina — Montaña post-long run", icon:"🐕", type:"martina", dur:"60min", checkable:true,
+       desc:"La caminata post-long run más valiosa de la semana. Elimina lactato residual. Grounding + BDNF. Descalzo."},
+      {id:"do-prep", time:"16:00", name:"MEAL PREP semanal", icon:"👨‍🍳", type:"habit", dur:"2h", checkable:true,
+       desc:"2h de trabajo = 8-10h ahorradas en la semana.\n\n14:00 - Horno 200°C + ollas: arroz integral, quinoa, lentejas\n14:30 - Horno: pollo 1.2kg + batata 1kg + brócoli 600g\n15:00 - Salsa tomate batch + carne molida + huevos duros\n15:30 - Porcionar en recipientes con etiqueta del día\n16:00 - Snacks: yogurt × 7 + nueces porcionadas + overnight oats × 3"},
+      {id:"do-cena", time:"19:30", name:"Cena + Suplementos noche", icon:"🌙", type:"habit", dur:"—", checkable:true,
+       desc:"Cena liviana. Mañana empieza la semana.",
+       supplements:[
+         {name:"NaturoBest Multi",dose:"1 cápsula (2ª)",note:"Con cena"},
+         {name:"Omega-3",dose:"1-2g (resto)",note:""},
+         {name:"Ashwagandha + CoQ10",dose:"600mg + 100-200mg",note:"Con cena."},
+         {name:"Magnesio Glicinato",dose:"340mg",note:"El domingo en cama = el lunes en verde en el Oura."},
+       ]},
+    ]
+  },
+};
+
+const TS = {
+  habit:{accent:C.yellow,label:"Hábito"}, work:{accent:"#8d99ae",label:"Trabajo"}, gym:{accent:C.blue,label:"Gym"},
+  run:{accent:C.red,label:"Run"}, sport:{accent:C.green,label:"Deporte"}, sauna:{accent:C.orange,label:"Sauna"},
+  recovery:{accent:C.purple,label:"Recovery"}, martina:{accent:C.teal,label:"Martina"}, sleep:{accent:"#8b9bc4",label:"Sueño"}
+};
+
+const DAYS_ES = ["Domingo","Lunes","Martes","Miércoles","Jueves","Viernes","Sábado"];
+const MONTHS_ES = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
+
+const fmtDate = (d) => `${d.getDate()} ${MONTHS_ES[d.getMonth()]} ${d.getFullYear()}`;
+const fmtTime = (d) => `${String(d.getHours()).padStart(2,"0")}:${String(d.getMinutes()).padStart(2,"0")}`;
+const keyForDate = (d) => `${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`;
+const getWeekDates = (base) => {
+  const baseDow = base.getDay();
+  const sunday = new Date(base);
+  sunday.setDate(base.getDate()-baseDow);
+  return Array.from({length:7}, (_,i)=> {
+    const d = new Date(sunday);
+    d.setDate(sunday.getDate()+i);
+    return d;
+  });
+};
+const roundHours = (ms) => ms ? (ms / 3600000).toFixed(1) : null;
+
+function App(){
+  const [now, setNow] = useState(new Date());
+  const [activeTab, setActiveTab] = useState("today");
+  const [selectedDow, setSelectedDow] = useState(new Date().getDay());
+  const [checked, setChecked] = useState({});
+  const [expanded, setExpanded] = useState({});
+  const [weights, setWeights] = useState(() => {
+    try{ return JSON.parse(localStorage.getItem("weights-v2") || "{}"); }catch{ return {}; }
+  });
+  const [weather, setWeather] = useState(null);
+  const [weatherErr, setWeatherErr] = useState(null);
+  const [location, setLocation] = useState("Ubicación");
+  const [whoop, setWhoop] = useState({loading:true, connected:false});
+
+  const todayDow = now.getDay();
+  const todayDateKey = keyForDate(now);
+  const weekDates = useMemo(() => getWeekDates(now), [now.getFullYear(), now.getMonth(), now.getDate()]);
+
+  useEffect(() => {
+    const timer = setInterval(() => setNow(new Date()), 60000);
+    return () => clearInterval(timer);
+  }, []);
+
+  useEffect(() => {
+    try {
+      setChecked(JSON.parse(localStorage.getItem(`checks-${todayDateKey}`) || "{}"));
+    } catch {}
+  }, [todayDateKey]);
+
+  useEffect(() => {
+    if ("serviceWorker" in navigator) navigator.serviceWorker.register("/sw.js").catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    fetch("/.netlify/functions/whoop-data", { credentials:"include" })
+      .then(r => r.json())
+      .then(data => setWhoop({ loading:false, ...data }))
+      .catch(() => setWhoop({ loading:false, connected:false, error:"No se pudo leer WHOOP" }));
+  }, []);
+
+  useEffect(() => {
+    const cacheKey = "weather-cache-v1";
+    try {
+      const cached = JSON.parse(localStorage.getItem(cacheKey) || "null");
+      if (cached && Date.now() - cached.ts < 15 * 60 * 1000) {
+        setWeather(cached.weather);
+        setLocation(cached.location);
+      }
+    } catch {}
+
+    if(!navigator.geolocation) {
+      setWeatherErr("Sin geolocalización");
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(async pos => {
+      const { latitude:lat, longitude:lon } = pos.coords;
+      try {
+        const [wRes, gRes] = await Promise.all([
+          fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m&timezone=auto`),
+          fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`)
+        ]);
+        const wData = await wRes.json();
+        const gData = await gRes.json();
+        const c = wData.current;
+        const nextWeather = {
+          temp: Math.round(c.temperature_2m),
+          feels: Math.round(c.apparent_temperature),
+          humidity: c.relative_humidity_2m,
+          wind: Math.round(c.wind_speed_10m),
+          code: c.weather_code
+        };
+        const nextLocation = gData.address?.suburb || gData.address?.city_district || gData.address?.city || "Brisbane";
+        setWeather(nextWeather);
+        setLocation(nextLocation);
+        localStorage.setItem(cacheKey, JSON.stringify({ts:Date.now(), weather:nextWeather, location:nextLocation}));
+      } catch (e) {
+        setWeatherErr("Error obteniendo clima");
+      }
+    }, () => setWeatherErr("Permiso de ubicación denegado"), { timeout:10000 });
+  }, []);
+
+  const selectedDate = weekDates[selectedDow];
+  const selectedDateKey = keyForDate(selectedDate);
+  const currentProtocol = PROTOCOL[todayDow];
+  const selectedProtocol = PROTOCOL[selectedDow];
+  const todayBlocks = currentProtocol?.blocks || [];
+  const checkableBlocks = useMemo(() => todayBlocks.filter(b => b.checkable), [todayBlocks]);
+  const doneCount = useMemo(() => checkableBlocks.filter(b => checked[b.id]).length, [checkableBlocks, checked]);
+  const progress = checkableBlocks.length ? Math.round((doneCount / checkableBlocks.length) * 100) : 0;
+
+  const toggleCheck = (id) => {
+    setChecked(prev => {
+      const next = { ...prev, [id]: !prev[id] };
+      localStorage.setItem(`checks-${todayDateKey}`, JSON.stringify(next));
+      return next;
+    });
+  };
+
+  const saveWeight = (blockId, idx, value) => {
+    const key = `${todayDateKey}::${blockId}::${idx}`;
+    setWeights(prev => {
+      const next = { ...prev, [key]: value };
+      localStorage.setItem("weights-v2", JSON.stringify(next));
+      return next;
+    });
+  };
+
+  const weatherInfo = weather ? (WMO[weather.code] || { label:"Clima", icon:"🌤️" }) : null;
+  const recoveryScore = whoop?.recovery?.score?.recovery_score ?? whoop?.recovery?.score?.recovery_score;
+  const recoveryBucket = recoveryScore == null ? "WHOOP pendiente" : recoveryScore >= 67 ? "Verde" : recoveryScore >= 34 ? "Amarillo" : "Rojo";
+  const sleepHours = roundHours(whoop?.sleep?.score?.stage_summary?.total_in_bed_time_milli || whoop?.sleep?.score?.stage_summary?.total_sleep_time_milli);
+  const sleepNeed = roundHours(whoop?.sleep?.score?.sleep_needed?.baseline_milli);
+  const cycleStrain = whoop?.cycle?.score?.strain != null ? Number(whoop.cycle.score.strain).toFixed(1) : "--";
+
+  const renderBlock = (block) => {
+    const style = TS[block.type] || TS.habit;
+    const isChecked = !!checked[block.id];
+    const isExpanded = !!expanded[block.id];
+    return (
+      <article key={block.id} className={`block ${isChecked ? "done" : ""}`} style={{"--accent": style.accent}}>
+        <div className="blockHead">
+          {block.checkable ? (
+            <button className={`check ${isChecked ? "on" : ""}`} aria-label={isChecked ? `Desmarcar ${block.name}` : `Marcar ${block.name}`} onClick={() => toggleCheck(block.id)}>{isChecked ? "✓" : ""}</button>
+          ) : <div style={{width:28,flex:"0 0 auto"}} />}
+          <div className="blockBody">
+            <div className="topline">
+              <span className="badge">{style.label}</span>
+              <span className="subtle">{block.time}</span>
+              {block.dur && <span className="subtle">· {block.dur}</span>}
+            </div>
+            <div className="blockTitle">{block.icon} {block.name}</div>
+            <div className="blockMeta">
+              {block.exercises && <span>{block.exercises.length} ejercicios</span>}
+              {block.supplements && <span>{block.supplements.length} suplementos</span>}
+              {block.desc && <span>detalle disponible</span>}
+            </div>
+          </div>
+          <button className="expand" aria-label={isExpanded ? `Ocultar detalles de ${block.name}` : `Ver detalles de ${block.name}`} onClick={() => setExpanded(p => ({ ...p, [block.id]: !p[block.id] }))}>{isExpanded ? "−" : "+"}</button>
+        </div>
+
+        {isExpanded && (
+          <div className="blockDetails">
+            {block.desc && <p className="detailText">{block.desc}</p>}
+
+            {block.supplements?.length > 0 && (
+              <section>
+                <div className="sectionTitle">Suplementos</div>
+                <div className="itemGrid" style={{marginTop:10}}>
+                  {block.supplements.map((s, i) => (
+                    <div className="itemCard" key={i}>
+                      <div className="itemTop">
+                        <div className="itemName">{s.name}</div>
+                        <div className="itemName" style={{color:C.green, whiteSpace:"nowrap"}}>{s.dose}</div>
+                      </div>
+                      {s.note && <div className="itemMeta">{s.note}</div>}
+                    </div>
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {block.exercises?.length > 0 && (
+              <section>
+                <div className="sectionTitle">Ejercicios</div>
+                <div className="itemGrid" style={{marginTop:10}}>
+                  {block.exercises.map((ex, i) => {
+                    const wKey = `${todayDateKey}::${block.id}::${i}`;
+                    return (
+                      <div className="itemCard" key={i}>
+                        <div className="itemTop">
+                          <div>
+                            <div className="itemName">{ex.name}</div>
+                            <div className="itemMeta">{ex.sets} × {ex.reps} · descanso {ex.rest}</div>
+                          </div>
+                          <div className="itemName" style={{color:C.blue}}>{ex.weight || ""}</div>
+                        </div>
+                        {ex.note && <div className="itemMeta">{ex.note}</div>}
+                        {ex.weight !== "Corporal" && (
+                          <div className="inputRow">
+                            <label className="subtle" htmlFor={wKey}>Peso hoy</label>
+                            <input id={wKey} className="input" type="text" value={weights[wKey] || ""} placeholder="kg o lb" onChange={(e) => saveWeight(block.id, i, e.target.value)} />
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </section>
+            )}
+          </div>
+        )}
+      </article>
+    );
+  };
+
+  return (
+    <main className="app">
+      <div className="shell">
+        <header className="header">
+          <div className="headtop">
+            <div>
+              <div className="eyebrow">The 1% Protocol</div>
+              <h1 className="title">{DAYS_ES[todayDow]}</h1>
+              <div className="subtle">{fmtDate(now)} · {fmtTime(now)}</div>
+            </div>
+
+            <div className="pills">
+              {currentProtocol && <div className="pill">{currentProtocol.tag}</div>}
+              <div className="pill">{whoop.connected ? "WHOOP conectado" : "WHOOP pendiente"}</div>
+            </div>
+          </div>
+
+          <div className="grid4">
+            <div className="stat">
+              <div className="value" style={{color:C.green}}>{progress}%</div>
+              <div className="label">avance del día</div>
+            </div>
+            <div className="stat">
+              <div className="value">{doneCount}/{checkableBlocks.length}</div>
+              <div className="label">bloques completados</div>
+            </div>
+            <div className="stat">
+              <div className="value small" style={{color: whoop.connected ? C.green : C.p }}>{whoop.loading ? "..." : recoveryBucket}</div>
+              <div className="label">estado WHOOP</div>
+            </div>
+            <div className="stat">
+              <div className="value small" style={{color:C.blue}}>{cycleStrain}</div>
+              <div className="label">strain actual</div>
+            </div>
+          </div>
+
+          <div className="connectRow">
+            {whoop.connected ? (
+              <div className="subtle">
+                Recovery {recoveryScore ?? "--"} · Sleep {sleepHours ?? "--"}h · Need {sleepNeed ?? "--"}h
+              </div>
+            ) : (
+              <>
+                <a className="btn primary" href="/.netlify/functions/whoop-auth">Conectar WHOOP</a>
+                <div className="subtle">Primero haz deploy, luego registra tu app en WHOOP y agrega tus variables en Netlify.</div>
+              </>
+            )}
+          </div>
+
+          <div className="tabs">
+            <button className={`tab ${activeTab === "today" ? "active" : ""}`} onClick={() => setActiveTab("today")}>Hoy</button>
+            <button className={`tab ${activeTab === "week" ? "active" : ""}`} onClick={() => setActiveTab("week")}>Semana</button>
+          </div>
+        </header>
+
+        <section className="content">
+          <div className="weather">
+            {weather ? (
+              <>
+                <div className="weatherMain">
+                  <div>
+                    <div className="kicker">📍 {location}</div>
+                    <div className="temp">{weather.temp}°</div>
+                    <div className="subtle">Sensación {weather.feels}°C</div>
+                  </div>
+                  <div>
+                    <div style={{fontSize:32}}>{weatherInfo.icon}</div>
+                    <div className="itemName">{weatherInfo.label}</div>
+                  </div>
+                </div>
+                <div className="miniCard">
+                  <div className="kicker">humedad</div>
+                  <div className="value small" style={{color:C.blue}}>{weather.humidity}%</div>
+                </div>
+                <div className="miniCard">
+                  <div className="kicker">viento</div>
+                  <div className="value small" style={{color:C.teal}}>{weather.wind}</div>
+                  <div className="subtle">km/h</div>
+                </div>
+                <div className="trainingHint">
+                  {weather.temp > 30 ? "Calor alto: sube electrolitos y baja intensidad si WHOOP viene amarillo o rojo." :
+                    weather.humidity > 80 ? "Humedad alta: más agua y pacing conservador." :
+                    whoop.connected && recoveryScore != null && recoveryScore < 34 ? "Recovery rojo: hoy toca bajar volumen, no buscar PR." :
+                    "Buenas condiciones para entrenar."}
+                </div>
+              </>
+            ) : (
+              <div className="subtle">{weatherErr || "Cargando clima..."}</div>
+            )}
+          </div>
+
+          {whoop.connected && (
+            <div className="summaryBox">
+              <div className="sectionTitle">Recovery hoy</div>
+              <div className="summaryGrid" style={{marginTop:12}}>
+                <div className="summaryStat"><div className="kicker">recovery</div><div className="value small" style={{color:C.green}}>{recoveryScore ?? "--"}</div></div>
+                <div className="summaryStat"><div className="kicker">RHR</div><div className="value small">{whoop?.recovery?.score?.resting_heart_rate ?? "--"}</div></div>
+                <div className="summaryStat"><div className="kicker">HRV</div><div className="value small">{whoop?.recovery?.score?.hrv_rmssd_milli ? Math.round(whoop.recovery.score.hrv_rmssd_milli) : "--"}</div></div>
+                <div className="summaryStat"><div className="kicker">sleep</div><div className="value small">{sleepHours ?? "--"}h</div></div>
+              </div>
+              <div className="subtle">
+                {recoveryScore == null ? "WHOOP todavía no devolvió datos útiles." :
+                  recoveryScore >= 67 ? "Hoy puedes ejecutar el protocolo completo." :
+                  recoveryScore >= 34 ? "Recorta volumen y evita sets al fallo." :
+                  "Haz Zone 2 suave, movilidad y recuperación activa."}
+              </div>
+            </div>
+          )}
+
+          {activeTab === "today" ? (
+            <div className="list">
+              {todayBlocks.map(renderBlock)}
+            </div>
+          ) : (
+            <div className="weekWrap">
+              <aside>
+                {[1,2,3,4,5,6,0].map((dow) => {
+                  const d = weekDates[dow];
+                  const dp = PROTOCOL[dow];
+                  return (
+                    <button key={dow} className={`dayButton ${selectedDow === dow ? "active" : ""}`} onClick={() => setSelectedDow(dow)}>
+                      <div className="itemName">{DAYS_ES[dow]}</div>
+                      <div className="dayDate">{fmtDate(d)}</div>
+                      <div className="subtle" style={{marginTop:6}}>{dp?.tag || "Sin protocolo"}</div>
+                    </button>
+                  );
+                })}
+              </aside>
+
+              <section className="summaryBox">
+                <div className="headtop" style={{marginBottom:12}}>
+                  <div>
+                    <div className="sectionTitle">Vista semanal</div>
+                    <div className="blockTitle" style={{fontSize:28}}>{DAYS_ES[selectedDow]}</div>
+                    <div className="subtle">{fmtDate(selectedDate)}</div>
+                  </div>
+                  <div className="pill">{selectedProtocol?.tag || "Sin protocolo"}</div>
+                </div>
+
+                {selectedProtocol ? (
+                  <>
+                    <div className="summaryGrid">
+                      <div className="summaryStat"><div className="kicker">bloques</div><div className="value small">{selectedProtocol.blocks.length}</div></div>
+                      <div className="summaryStat"><div className="kicker">checkeables</div><div className="value small">{selectedProtocol.blocks.filter(b => b.checkable).length}</div></div>
+                      <div className="summaryStat"><div className="kicker">ejercicios</div><div className="value small">{selectedProtocol.blocks.reduce((n,b) => n + (b.exercises?.length || 0), 0)}</div></div>
+                      <div className="summaryStat"><div className="kicker">suplementos</div><div className="value small">{selectedProtocol.blocks.reduce((n,b) => n + (b.supplements?.length || 0), 0)}</div></div>
+                    </div>
+                    <div className="itemGrid">
+                      {selectedProtocol.blocks.map((block) => {
+                        const style = TS[block.type] || TS.habit;
+                        return (
+                          <div key={block.id} className="itemCard" style={{"--accent": style.accent, borderLeft:`4px solid ${style.accent}`}}>
+                            <div className="itemTop">
+                              <div>
+                                <div className="itemName">{block.icon} {block.name}</div>
+                                <div className="itemMeta">{block.time} · {block.dur || "—"} · {style.label}</div>
+                              </div>
+                            </div>
+                            {block.desc && <div className="itemMeta" style={{whiteSpace:"pre-line"}}>{block.desc}</div>}
+                            {block.exercises?.length > 0 && (
+                              <div className="itemMeta" style={{marginTop:10}}>
+                                <strong>Ejercicios:</strong> {block.exercises.map(ex => ex.name).join(" · ")}
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </>
+                ) : <div className="subtle">No hay protocolo cargado para este día.</div>}
+              </section>
+            </div>
+          )}
+        </section>
+
+        <footer className="note">
+          Fase fácil ejecutada: UI más limpia, header normal, semana con fecha real, weather cache 15 min, service worker, botón WHOOP y funciones serverless listas. La migración a Vite queda para la segunda fase.
+        </footer>
+      </div>
+    </main>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+</script>
+</body>
+</html>
