@@ -42,17 +42,13 @@ exports.handler = async function (event) {
     };
   }
 
-  const accessToken = tokenData.access_token || "";
   const refreshToken = tokenData.refresh_token || "";
 
   return {
     statusCode: 302,
     headers: {
-      "Set-Cookie": [
-        `whoop_access_token=${accessToken}; Path=/; HttpOnly; Secure; SameSite=Lax`,
-        `whoop_refresh_token=${refreshToken}; Path=/; HttpOnly; Secure; SameSite=Lax`
-      ],
-      Location: "/"
+      "Set-Cookie": `whoop_refresh_token=${encodeURIComponent(refreshToken)}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=2592000`,
+      "Location": "/"
     },
     body: ""
   };
