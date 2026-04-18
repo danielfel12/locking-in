@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Privacy Policy - The 1% Protocol</title>
+</head>
+<body style="font-family: Arial; padding: 20px; max-width: 700px; margin: auto;">
+  <h1>Privacy Policy</h1>
+
+  <p>This application ("The 1% Protocol") is a personal fitness tracking tool.</p>
+
+  <h2>Data Usage</h2>
+  <p>We access WHOOP data (recovery, sleep, strain, workouts) only to display insights within the app.</p>
+
+  <h2>Storage</h2>
+  <p>No personal data is sold or shared with third parties. Data is processed securely and used only for personal insights.</p>
+
+  <h2>Security</h2>
+  <p>Authentication is handled via WHOOP OAuth. Tokens are stored securely and not exposed publicly.</p>
+
+  <h2>Contact</h2>
+  <p>If you have any questions, contact: your-email@example.com</p>
+</body>
+</html>
